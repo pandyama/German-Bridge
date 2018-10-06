@@ -8,25 +8,27 @@
 
     <LinearLayout
         android:id="@+id/layout_pokers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:layout_centerHorizontal="true"
         android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        tools:layout_editor_absoluteX="29dp"
+        tools:layout_editor_absoluteY="0dp">
 
         <ImageView
             android:id="@+id/one"
-            android:src="@drawable/two_of_clubs"
             android:layout_width="80dp"
-            android:layout_height="300dp" />
+            android:layout_height="300dp"
+            android:src="@drawable/two_of_clubs" />
 
         <ImageView
-            android:layout_marginRight="30dp"
-            android:layout_marginLeft="30dp"
             android:id="@+id/two"
-            android:src="@drawable/two_of_diamonds"
             android:layout_width="80dp"
-            android:layout_height="300dp" />
+            android:layout_height="match_parent"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:src="@drawable/two_of_diamonds" />
 
         <ImageView
             android:id="@+id/three"

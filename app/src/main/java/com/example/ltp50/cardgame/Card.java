@@ -5,7 +5,7 @@ import android.widget.ImageView;
 public class Card {
     private final int rank;
     private final int suit;
-    private final ImageView image;
+    private final int drawable;
 
 
     public final static int DIAMONDS = 1;
@@ -29,10 +29,10 @@ public class Card {
     public final static int ACE   = 14;
 
 
-    public Card(int rank, int suit, ImageView img){
+    public Card(int rank, int suit, int drawable){
         this.rank = rank;
         this.suit = suit;
-        this.image = img;
+        this.drawable = drawable;
     }
 
     public int getRank(){
@@ -43,39 +43,39 @@ public class Card {
         return suit;
     }
 
-    public ImageView getImage(){
-        return image;
+    public int getDrawable(){
+        return drawable;
     }
 
 
     public static String rankToString(int rank) {
         switch (rank) {
             case ACE:
-                return "Ace";
+                return "ace";
             case TWO:
-                return "Two";
+                return "two";
             case THREE:
-                return "Three";
+                return "three";
             case FOUR:
-                return "Four";
+                return "four";
             case FIVE:
-                return "Five";
+                return "five";
             case SIX:
-                return "Six";
+                return "six";
             case SEVEN:
-                return "Seven";
+                return "seven";
             case EIGHT:
-                return "Eight";
+                return "eight";
             case NINE:
-                return "Nine";
+                return "nine";
             case TEN:
-                return "Ten";
+                return "ten";
             case JACK:
-                return "Jack";
+                return "jack";
             case QUEEN:
-                return "Queen";
+                return "queen";
             case KING:
-                return "King";
+                return "king";
             default:
                 //Handle an illegal argument.  There are generally two
                 //ways to handle invalid arguments, throwing an exception
@@ -88,13 +88,13 @@ public class Card {
     public static String suitToString(int suit) {
         switch (suit) {
             case DIAMONDS:
-                return "Diamonds";
+                return "diamonds";
             case CLUBS:
-                return "Clubs";
+                return "clubs";
             case HEARTS:
-                return "Hearts";
+                return "hearts";
             case SPADES:
-                return "Spades";
+                return "spades";
             default:
                 return null;
         }

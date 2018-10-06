@@ -1,5 +1,6 @@
 package com.example.ltp50.cardgame;
 
+import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,6 +21,9 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     ImageView one, two, three;
     List<String> cards = new ArrayList<>();
     Button btnNewGame;
+
+
+    List<Card> deck = new ArrayList<>();
 
     boolean oneBackShow=true, twoBackShow=true, threeBackShow=true;
 
@@ -62,6 +67,33 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         cards.add("k");
 
         Collections.shuffle(cards);
+    }
+
+    private void newDeck(){
+
+        //ImageView image = (ImageView)findViewById(R.id.one);
+        //Resources resource = context.getResources();
+
+        //int resID = getResources().getIdentifier("twohearts","string",getPackageName());
+        //ImageView image = new ImageView(this);
+        
+        int draw = 0;
+        deck.clear();
+        for(int i = 1; i <= 4; i++){
+            for(int j = 1; j <= 14; j++){
+                String rank = Card.rankToString(j);
+                String suit = Card.suitToString(i);
+                String cardName = rank+suit;
+
+                draw = getResources().getIdentifier(cardName,"string", getPackageName());
+
+                Card obj = new Card(i,j,draw);
+                deck.add(obj);
+            }
+        }
+
+        Collections.shuffle(deck);
+
     }
 
     @Override

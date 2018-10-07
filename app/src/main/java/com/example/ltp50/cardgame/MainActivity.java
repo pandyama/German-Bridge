@@ -1,5 +1,6 @@
 package com.example.ltp50.cardgame;
 
+import android.animation.ObjectAnimator;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.provider.ContactsContract;
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
             //System.out.println(deck.get(i).getSuit());
             final ImageView image = new ImageView(MainActivity.this);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            lp.setMargins(0,900,0,0);
             image.setMaxWidth(300);
             image.setMaxHeight(300);
             image.setImageResource(deck.get(i).getDrawable());
@@ -116,8 +118,11 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
         Animation anim_one = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.newmiddle);
         //Animation anim_two = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.animation_two);
-
-        img.startAnimation(anim_one);
+        ObjectAnimator obj = ObjectAnimator.ofFloat(img,"x",400);
+        ObjectAnimator obj1 = ObjectAnimator.ofFloat(img, "y",10);
+        obj.start();
+        obj1.start();
+        //img.startAnimation(anim_one);
     }
 
     private void setUp(){

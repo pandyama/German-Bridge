@@ -11,13 +11,11 @@
         android:id="@+id/btnNew"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="189dp"
-        android:layout_marginBottom="158dp"
+        android:layout_marginEnd="148dp"
+        android:layout_marginRight="148dp"
         android:text="Deal"
-        app:layout_constraintBottom_toTopOf="@+id/german"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        tools:layout_editor_absoluteY="0dp" />
 
     <LinearLayout
         android:id="@+id/german"
@@ -32,6 +30,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnNew">
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/btnNew"></LinearLayout>
 </android.support.constraint.ConstraintLayout>

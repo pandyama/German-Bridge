@@ -2,6 +2,7 @@ package com.example.ltp50.cardgame;
 
 import android.graphics.drawable.Drawable;
 import android.media.Image;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,7 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements Animation.AnimationListener, View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements Animation.AnimationListener {
 
     ImageView one, two, three;
     List<String> cards = new ArrayList<>();
@@ -27,9 +28,16 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
     boolean oneBackShow=true, twoBackShow=true, threeBackShow=true;
 
-    Animation toMiddle, fromMiddle;
+    Animation toMiddle;
 
     int flagCard = 0;
+
+/*    private View.OnClickListener newGameClicked = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            dealCards();
+        }
+    };*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,27 +45,79 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         setContentView(R.layout.activity_main);
 
 
-        one = (ImageView)findViewById(R.id.one);
+       /*one = (ImageView)findViewById(R.id.one);
         two = (ImageView)findViewById(R.id.two);
         three = (ImageView)findViewById(R.id.three);
 
 
-        btnNewGame = (Button)findViewById(R.id.btnNew);
-        toMiddle = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.to_middle); //What is getApplicationContext
+
+         //What is getApplicationContext
         fromMiddle = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.from_middle);
 
-        toMiddle.setAnimationListener(this);
+
         fromMiddle.setAnimationListener(this);
 
         one.setOnClickListener(this);
         two.setOnClickListener(this);
-        three.setOnClickListener(this);
+        three.setOnClickListener(this);*/
+        toMiddle = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.to_middle);
+        toMiddle.setAnimationListener(this);
 
-        btnNewGame.setOnClickListener(this);
+        btnNewGame = (Button)findViewById(R.id.btnNew);
+
+        btnNewGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                System.out.println("Button Clicked");
+                dealCards();
+            }
+        });
 
 
-        setUp();
+        //setUp();
 
+    }
+
+    private void dealCards(){
+        System.out.println("Making new Deck");
+        newDeck();
+        Collections.shuffle(deck);
+        final LinearLayout layoutNew = (LinearLayout)findViewById(R.id.german);
+        layoutNew.removeAllViews();
+        for(int i = 0; i < 5; i++){
+            //System.out.println(deck.get(i).getSuit());
+            final ImageView image = new ImageView(MainActivity.this);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            image.setMaxWidth(300);
+            image.setMaxHeight(300);
+            image.setImageResource(deck.get(i).getDrawable());
+            //System.out.println(deck.get(i).getDrawable());
+            image.setLayoutParams(lp);
+            image.setAdjustViewBounds(true);
+            image.setScaleType(ImageView.ScaleType.FIT_END);
+            image.setId(i);
+            System.out.print("Card id : "+image.getId());
+//            /image.setVisibility(View.VISIBLE);
+            layoutNew.addView(image);
+
+            image.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    playCard(image.getId(),layoutNew);
+                }
+            });
+        }
+    }
+
+    private void playCard(int id, LinearLayout l1){
+        l1 = (LinearLayout)findViewById(R.id.german);
+        ImageView img = (ImageView)findViewById(id);
+        //l1.removeViewInLayout((ImageView)findViewById(id));
+
+        Animation anim_one = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.newmiddle);
+        //Animation anim_two = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.animation_two);
+
+        img.startAnimation(anim_one);
     }
 
     private void setUp(){
@@ -66,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         cards.add("k");
         cards.add("k");
 
-        Collections.shuffle(cards);
+        //Collections.shuffle(cards);
     }
 
     private void newDeck(){
@@ -76,23 +136,30 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
         //int resID = getResources().getIdentifier("twohearts","string",getPackageName());
         //ImageView image = new ImageView(this);
-        
+
         int draw = 0;
         deck.clear();
         for(int i = 1; i <= 4; i++){
-            for(int j = 1; j <= 14; j++){
+            for(int j = 2; j <= 14; j++){
                 String rank = Card.rankToString(j);
                 String suit = Card.suitToString(i);
                 String cardName = rank+suit;
 
-                draw = getResources().getIdentifier(cardName,"string", getPackageName());
+                //System.out.print(cardName+" : ");
 
-                Card obj = new Card(i,j,draw);
+
+                draw = getResources().getIdentifier(cardName,"drawable", getPackageName());
+                //System.out.println(draw);
+                Card obj = new Card(j,i,draw);
                 deck.add(obj);
             }
         }
 
-        Collections.shuffle(deck);
+        //System.out.println("Printing drawable id: ");
+        //System.out.println(R.drawable.aceclubs);
+        //System.out.println(getResources().getIdentifier("aceclubs","drawable", getPackageName()));
+
+
 
     }
 
@@ -104,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     @Override
     public void onAnimationEnd(Animation animation) {
 
-        if(flagCard == 0){
+        /*if(flagCard == 0){
             if(animation == toMiddle){
                 if(oneBackShow){
                     showCard(oneBackShow,((ImageView)findViewById(R.id.one)),flagCard);
@@ -151,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
             } else {
                 threeBackShow = !threeBackShow;
             }
-        }
+        }*/
 
 
 
@@ -161,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
     private void showCard(boolean isBackShow, ImageView imgView, int index){
 
-            if(isBackShow){
+            /*if(isBackShow){
                 if(index == 0){ //First Card
                     if(cards.get(0).equals("a")){
                         imgView.setImageResource(R.drawable.two_of_clubs);
@@ -191,19 +258,19 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
                 }
 
-            }
+            }*/
 
     }
 
-    @Override
+    //@Override
     public void onAnimationRepeat(Animation animation) {
 
     }
 
-    @Override
+    //@Override
     public void onClick(View view) {
 
-        if (view.getId() == R.id.btnNew) {
+  /*      if (view.getId() == R.id.btnNew) {
             newGame();
         }
         else {
@@ -220,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
                 flagCard = 2;
             }
         }
-
+*/
     }
 
     private void newGame(){
@@ -241,6 +308,7 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         oneBackShow = twoBackShow = threeBackShow = true;
 
 
-
     }
+
+
 }

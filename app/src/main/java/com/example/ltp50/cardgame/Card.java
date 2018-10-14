@@ -40,10 +40,12 @@ public class Card {
     }
 
     public int getSuit(){
+
         return suit;
     }
 
     public int getDrawable(){
+
         return drawable;
     }
 

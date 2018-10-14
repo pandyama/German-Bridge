@@ -1,38 +1,83 @@
 package com.example.ltp50.cardgame;
 
 import android.animation.ObjectAnimator;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
-import android.provider.ContactsContract;
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.IntentFilter;
+import android.net.wifi.WifiManager;
+import android.net.wifi.WpsInfo;
+import android.net.wifi.p2p.WifiP2pConfig;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pGroup;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.support.v7.app.AppCompatActivity;
+import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
+import java.nio.channels.Channel;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements Animation.AnimationListener {
 
+    //VISUAL VARIABLES
     ImageView one, two, three;
-    List<String> cards = new ArrayList<>();
-    Button btnNewGame;
-
-
-    List<Card> deck = new ArrayList<>();
-
-    boolean oneBackShow=true, twoBackShow=true, threeBackShow=true;
-
+    Button btnNewGame, btnWifi, btnDiscover;
     Animation toMiddle;
+    TextView ts;
+    ListView ls;
+    LinearLayout layoutNew;
 
-    int flagCard = 0;
 
+    //STORAGE VARIABLES
+    int score = 0;
+    boolean oneBackShow=true, twoBackShow=true, threeBackShow=true;
+    boolean flagPlayer = true;
+    boolean run = true;
+
+    //ARRAY VARIABLES
+    List<String> cards = new ArrayList<>();
+    List<Card> deck = new ArrayList<>();
+    List<Card> playedCards = new ArrayList<>();
+
+    List<Card> p1Deck = new ArrayList<>();
+    List<Card> p2Deck = new ArrayList<>();
+
+    List<ImageView> AiView = new ArrayList<>();
+
+    List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
+    String[] deviceNameArray;
+    WifiP2pDevice[] deviceArray;
+
+
+    //OBJECT VARIABLES
+    Card trumpCard;
+    Player p1 = new Player(p1Deck, score);
+    Player p2 = new Player(p2Deck, score);
+
+    WifiP2pManager mManager;
+    WifiP2pManager.Channel mChannel;
+    WifiManager wifiManager;
+
+    BroadcastReceiver mReceiver;
+    IntentFilter mIntentFilter;
+    IntentFilter intentFilter = new IntentFilter();
 /*    private View.OnClickListener newGameClicked = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -45,32 +90,44 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        btnWifi = findViewById(R.id.wifi);
+        btnDiscover = findViewById(R.id.btnDiscover);
+        btnNewGame = (Button)findViewById(R.id.btnNew);
 
-       /*one = (ImageView)findViewById(R.id.one);
-        two = (ImageView)findViewById(R.id.two);
-        three = (ImageView)findViewById(R.id.three);
+        //ts = findViewById(R.id.tView);
+        //ls = findViewById(R.id.lView);
+
+       /* wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
 
+        mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        mChannel = mManager.initialize(this,getMainLooper(),null);
 
-         //What is getApplicationContext
-        fromMiddle = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.from_middle);
 
+        mReceiver = new WifiDirectBroadcastReceiver(mManager,mChannel,this);
 
-        fromMiddle.setAnimationListener(this);
+        mIntentFilter =new IntentFilter();
 
-        one.setOnClickListener(this);
-        two.setOnClickListener(this);
-        three.setOnClickListener(this);*/
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        exqListener();*/
+
         toMiddle = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.to_middle);
         toMiddle.setAnimationListener(this);
 
-        btnNewGame = (Button)findViewById(R.id.btnNew);
+
 
         btnNewGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 System.out.println("Button Clicked");
-                dealCards();
+                trumpCard();
+                //flagPlayer = false;
+                dealCards(p1);
+                dealCardsAi(p2);
+                flagPlayer = false;
             }
         });
 
@@ -79,21 +136,95 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
     }
 
-    private void dealCards(){
+/*    WifiP2pManager.PeerListListener peerListListener = new PeerListListener() {
+        @Override
+        public void onPeersAvailable(WifiP2pDeviceList peerList) {
+            if(!peerList.getDeviceList().equals(peers)){
+                peers.clear();
+                peers.addAll(peerList.getDeviceList());
+
+                deviceNameArray = new String[peerList.getDeviceList().size()];
+                deviceArray = new WifiP2pDevice[peerList.getDeviceList().size()];
+                int index = 0;
+
+                for(WifiP2pDevice device : peerList.getDeviceList()){
+                    deviceNameArray[index] = device.deviceName;
+                    deviceArray[index] = device;
+                    //ts.setText(deviceNameArray[index]);
+                    //ts.setText("Meet");
+                    index++;
+                }
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1,deviceNameArray);
+                ls.setAdapter(adapter);
+                Toast.makeText(getApplicationContext(),"Devices Found",Toast.LENGTH_SHORT).show();
+                //ts.setText("Meet");
+            }
+        }
+    };*/
+
+    @SuppressLint("ResourceType")
+    private void trumpCard(){
+        if(run) {
+            newDeck();
+            Collections.shuffle(deck);
+            trumpCard = deck.get(1);
+            layoutNew = (LinearLayout) findViewById(R.id.german);
+            //layoutNew.removeAllViews();
+            ImageView image = new ImageView(MainActivity.this);
+            //LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            //lp.setMargins(600, 0, 0, 0);
+            image.setMaxWidth(300);
+            image.setMaxHeight(300);
+            image.setX(500);
+            image.setY(0);
+            image.setImageResource(deck.get(1).getDrawable());
+            System.out.println("Trump Card " + deck.get(1).getDrawable());
+            //image.setLayoutParams(lp);
+            image.setAdjustViewBounds(true);
+            //image.setScaleType(ImageView.ScaleType.FIT_XY);
+            image.setId(120);
+            System.out.print("Card id : " + image.getId());
+//            /image.setVisibility(View.VISIBLE);
+            layoutNew.addView(image);
+
+            deck.remove(1);
+        }
+        run = false;
+
+    }
+
+    private void dealCards(Player p){
         System.out.println("Making new Deck");
-        newDeck();
-        Collections.shuffle(deck);
-        final LinearLayout layoutNew = (LinearLayout)findViewById(R.id.german);
-        layoutNew.removeAllViews();
+        //newDeck();
+        //Collections.shuffle(deck);
+        layoutNew = (LinearLayout)findViewById(R.id.german);
+        //layoutNew.removeAllViews()
+        if(!flagPlayer) {
+            for(int i = 0; i < 5; i++){
+                ImageView imageNew = (ImageView)findViewById(i);
+                //image.setImageDrawable(null);
+                //imageNew.setImageBitmap(null);
+                //imageNew.destroyDrawingCache();
+                imageNew.setImageResource(0);
+                //layoutNew.addView(imageNew);
+                layoutNew.removeView(imageNew);
+            }
+            flagPlayer = true;
+        }
         for(int i = 0; i < 5; i++){
             //System.out.println(deck.get(i).getSuit());
             final ImageView image = new ImageView(MainActivity.this);
+
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            lp.setMargins(0,900,0,0);
-            image.setMaxWidth(300);
-            image.setMaxHeight(300);
+            lp.setMargins(0,1000,0,0);
+            image.setMaxWidth(200);
+            image.setMaxHeight(200);
             image.setImageResource(deck.get(i).getDrawable());
             //System.out.println(deck.get(i).getDrawable());
+            image.setX(-100);
+            image.setY(0);
+
             image.setLayoutParams(lp);
             image.setAdjustViewBounds(true);
             image.setScaleType(ImageView.ScaleType.FIT_END);
@@ -102,19 +233,76 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 //            /image.setVisibility(View.VISIBLE);
             layoutNew.addView(image);
 
+            final Card rest = deck.get(i);
+            p.deck.add(rest);
+
+            deck.remove(i);
+
             image.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    playCard(image.getId(),layoutNew);
+                    int j = 0;
+                    //image.getId(i);
+                    //layoutNew = (LinearLayout)findViewById(R.id.german);
+                    Card play = p2Deck.get(j);
+
+                    playCard(rest, image.getId(),layoutNew);
+                    Toast.makeText(getApplicationContext(),"AI Turn",Toast.LENGTH_SHORT).show();
+
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    playCard(play, AiView.get(j).getId(),layoutNew);
+
                 }
             });
         }
     }
 
-    private void playCard(int id, LinearLayout l1){
+    private void dealCardsAi(Player p){
+        System.out.println("Making new Deck");
+        //newDeck();
+        //Collections.shuffle(deck);
+        for(int i = 0; i < 5; i++){
+            final ImageView image = new ImageView(MainActivity.this);
+
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            lp.setMargins(0,1000,0,0);
+            image.setMaxWidth(200);
+            image.setMaxHeight(200);
+            image.setImageResource(deck.get(i).getDrawable());
+            //System.out.println(deck.get(i).getDrawable());
+            image.setX(-100);
+            image.setY(0);
+
+            image.setLayoutParams(lp);
+            image.setAdjustViewBounds(true);
+            image.setScaleType(ImageView.ScaleType.FIT_END);
+            image.setId(i+5);
+
+            AiView.add(image);
+
+            Card rest = deck.get(i);
+
+            p.deck.add(rest);
+        }
+
+        Toast.makeText(getApplicationContext(),"Cards dealt to both of you",Toast.LENGTH_SHORT).show();
+
+
+
+
+    }
+
+    private void playCard(Card res, int id, LinearLayout l1){
         l1 = (LinearLayout)findViewById(R.id.german);
         ImageView img = (ImageView)findViewById(id);
         //l1.removeViewInLayout((ImageView)findViewById(id));
+
+        Toast.makeText(getApplicationContext(),"Waiting for AI Turn",Toast.LENGTH_SHORT).show();
 
         Animation anim_one = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.newmiddle);
         //Animation anim_two = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.animation_two);
@@ -123,25 +311,22 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         obj.start();
         obj1.start();
         //img.startAnimation(anim_one);
+        playedCards.add(res);
+        //p1.deck.remove(res);
+        /*if(p1.deck.size() == 0){
+            getScore();
+        }
+*/
+        //Toast.makeText(getApplicationContext(),"Your Turn, Go",Toast.LENGTH_SHORT).show();
     }
 
-    private void setUp(){
-        cards.clear();
-        cards.add("a");
-        cards.add("k");
-        cards.add("k");
+    private void getScore(){
+        for(int i = 0; i < playedCards.size(); i++){
 
-        //Collections.shuffle(cards);
+        }
     }
 
     private void newDeck(){
-
-        //ImageView image = (ImageView)findViewById(R.id.one);
-        //Resources resource = context.getResources();
-
-        //int resID = getResources().getIdentifier("twohearts","string",getPackageName());
-        //ImageView image = new ImageView(this);
-
         int draw = 0;
         deck.clear();
         for(int i = 1; i <= 4; i++){
@@ -149,23 +334,13 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
                 String rank = Card.rankToString(j);
                 String suit = Card.suitToString(i);
                 String cardName = rank+suit;
-
                 //System.out.print(cardName+" : ");
-
-
                 draw = getResources().getIdentifier(cardName,"drawable", getPackageName());
                 //System.out.println(draw);
                 Card obj = new Card(j,i,draw);
                 deck.add(obj);
             }
         }
-
-        //System.out.println("Printing drawable id: ");
-        //System.out.println(R.drawable.aceclubs);
-        //System.out.println(getResources().getIdentifier("aceclubs","drawable", getPackageName()));
-
-
-
     }
 
     @Override
@@ -175,6 +350,10 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
     @Override
     public void onAnimationEnd(Animation animation) {
+
+        //final ImageView image = new ImageView(MainActivity.this);
+
+
 
         /*if(flagCard == 0){
             if(animation == toMiddle){
@@ -224,11 +403,6 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
                 threeBackShow = !threeBackShow;
             }
         }*/
-
-
-
-
-
     }
 
     private void showCard(boolean isBackShow, ImageView imgView, int index){
@@ -312,6 +486,53 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
         oneBackShow = twoBackShow = threeBackShow = true;
 
+
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //registerReceiver(mReceiver,mIntentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //unregisterReceiver(mReceiver);
+    }
+
+    private void exqListener() {
+
+        btnWifi.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(wifiManager.isWifiEnabled()){
+                    wifiManager.setWifiEnabled(false);
+                }
+                else{
+                    wifiManager.setWifiEnabled(true);
+                }
+            }
+        } );
+
+        btnDiscover.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mManager.discoverPeers( mChannel, new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        //Toast.makeText(context,"Wifi is ON",Toast.LENGTH_SHORT).show();
+                        btnWifi.setTextColor(4);
+                    }
+
+                    @Override
+                    public void onFailure(int i) {
+                        btnWifi.setTextColor(9);
+                    }
+                } );
+            }
+        } );
 
     }
 

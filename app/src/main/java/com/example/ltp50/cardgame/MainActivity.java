@@ -12,6 +12,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.os.Bundle;
@@ -19,8 +20,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.AnticipateOvershootInterpolator;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -34,7 +37,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements Animation.AnimationListener {
+public class MainActivity extends AppCompatActivity implements Animation.AnimationListener{
 
     //VISUAL VARIABLES
     ImageView one, two, three;
@@ -42,14 +45,20 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     Animation toMiddle;
     TextView ts;
     ListView ls;
-    LinearLayout layoutNew;
+    FrameLayout layoutNew;
 
 
     //STORAGE VARIABLES
     int score = 0;
     boolean oneBackShow=true, twoBackShow=true, threeBackShow=true;
     boolean flagPlayer = true;
+    boolean flagAi = true;
     boolean run = true;
+    int j = 0;
+    int i = 0;
+    int m = 0;
+    int t = 0;
+    int k = 0;
 
     //ARRAY VARIABLES
     List<String> cards = new ArrayList<>();
@@ -98,14 +107,9 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         //ls = findViewById(R.id.lView);
 
        /* wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-
-
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this,getMainLooper(),null);
-
-
         mReceiver = new WifiDirectBroadcastReceiver(mManager,mChannel,this);
-
         mIntentFilter =new IntentFilter();
 
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -114,28 +118,32 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         exqListener();*/
 
+        final dealCard d1 = new dealCard();
+
         toMiddle = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.to_middle);
         toMiddle.setAnimationListener(this);
-
-
-
         btnNewGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(!flagPlayer){
+                    layoutNew.removeAllViews();
+                }
                 System.out.println("Button Clicked");
+
+                System.out.println(p1Deck.size());
+                newDeck();
+                Collections.shuffle(deck);
+
                 trumpCard();
-                //flagPlayer = false;
+                //p1Deck.clear();
+                //p2Deck.clear();
                 dealCards(p1);
                 dealCardsAi(p2);
                 flagPlayer = false;
             }
         });
 
-
-        //setUp();
-
     }
-
 /*    WifiP2pManager.PeerListListener peerListListener = new PeerListListener() {
         @Override
         public void onPeersAvailable(WifiP2pDeviceList peerList) {
@@ -165,160 +173,236 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
 
     @SuppressLint("ResourceType")
     private void trumpCard(){
-        if(run) {
-            newDeck();
-            Collections.shuffle(deck);
+            /*if(!flagPlayer) {
+                    ImageView imageNew = (ImageView)findViewById(trumpCard.getImageId());
+                    System.out.println("Trump card id is: "+trumpCard.getImageId());
+                    imageNew.setImageResource(0);
+                    layoutNew.removeView(imageNew);
+            }*/
             trumpCard = deck.get(1);
-            layoutNew = (LinearLayout) findViewById(R.id.german);
-            //layoutNew.removeAllViews();
+            layoutNew = (FrameLayout) findViewById(R.id.german);
+
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+            lp.setMargins(0,500,0,0);
+
             ImageView image = new ImageView(MainActivity.this);
-            //LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            //lp.setMargins(600, 0, 0, 0);
             image.setMaxWidth(300);
             image.setMaxHeight(300);
             image.setX(500);
             image.setY(0);
             image.setImageResource(deck.get(1).getDrawable());
-            System.out.println("Trump Card " + deck.get(1).getDrawable());
-            //image.setLayoutParams(lp);
+            image.setLayoutParams(lp);
             image.setAdjustViewBounds(true);
-            //image.setScaleType(ImageView.ScaleType.FIT_XY);
-            image.setId(120);
-            System.out.print("Card id : " + image.getId());
-//            /image.setVisibility(View.VISIBLE);
+            image.setId(deck.get(1).getImageId());
             layoutNew.addView(image);
 
             deck.remove(1);
-        }
-        run = false;
-
     }
 
     private void dealCards(Player p){
         System.out.println("Making new Deck");
-        //newDeck();
-        //Collections.shuffle(deck);
-        layoutNew = (LinearLayout)findViewById(R.id.german);
-        //layoutNew.removeAllViews()
+        layoutNew = (FrameLayout) findViewById(R.id.german);
         if(!flagPlayer) {
-            for(int i = 0; i < 5; i++){
-                ImageView imageNew = (ImageView)findViewById(i);
-                //image.setImageDrawable(null);
-                //imageNew.setImageBitmap(null);
-                //imageNew.destroyDrawingCache();
+            /*for(int h = 0; h < 5; h++){
+                ImageView imageNew = (ImageView)findViewById(p.deck.get(h).getImageId());
+
                 imageNew.setImageResource(0);
-                //layoutNew.addView(imageNew);
                 layoutNew.removeView(imageNew);
-            }
-            flagPlayer = true;
+            }*/
+            p1Deck.clear();
         }
-        for(int i = 0; i < 5; i++){
-            //System.out.println(deck.get(i).getSuit());
+
+        for(i = 0; i < 5; i++){
+            int nobj = i;
+            int obj = (nobj*60)+20;
+            System.out.println("in for loop");
             final ImageView image = new ImageView(MainActivity.this);
 
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
             lp.setMargins(0,1000,0,0);
             image.setMaxWidth(200);
             image.setMaxHeight(200);
             image.setImageResource(deck.get(i).getDrawable());
-            //System.out.println(deck.get(i).getDrawable());
-            image.setX(-100);
+            image.setX(300+obj);
             image.setY(0);
 
             image.setLayoutParams(lp);
             image.setAdjustViewBounds(true);
             image.setScaleType(ImageView.ScaleType.FIT_END);
-            image.setId(i);
+            image.setId(deck.get(i).getImageId());
+
             System.out.print("Card id : "+image.getId());
-//            /image.setVisibility(View.VISIBLE);
+            System.out.print("Card id : "+deck.get(i).getImageId());
+            //final Card rest = p.deck.get(i);
             layoutNew.addView(image);
 
-            final Card rest = deck.get(i);
-            p.deck.add(rest);
+            p.deck.add(deck.get(i));
 
             deck.remove(i);
 
             image.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    int j = 0;
-                    //image.getId(i);
-                    //layoutNew = (LinearLayout)findViewById(R.id.german);
-                    Card play = p2Deck.get(j);
 
-                    playCard(rest, image.getId(),layoutNew);
                     Toast.makeText(getApplicationContext(),"AI Turn",Toast.LENGTH_SHORT).show();
-
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    playCard(play, AiView.get(j).getId(),layoutNew);
+                    playCard(p1Deck.get(i), image, layoutNew);
+                    System.out.println("The card you selected is "+view.getId());
+                    //Card play = p2Deck.get(j);
+                    playCardAi(layoutNew, t);
+                    t++;
+                    flagAi = false;
 
                 }
             });
+
+
+        }
+        i = 0;
+        t = 0;
+    }
+
+    private void callAi(){
+        if(j == p2Deck.size()){
+            j = 0;
+        }
+        else {
+            Card play = p2Deck.get(j);
+            //playCardAi(play, AiView.get(j), AiView.get(j).getId(),layoutNew);
+            j++;
         }
     }
 
     private void dealCardsAi(Player p){
-        System.out.println("Making new Deck");
-        //newDeck();
-        //Collections.shuffle(deck);
-        for(int i = 0; i < 5; i++){
-            final ImageView image = new ImageView(MainActivity.this);
 
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            lp.setMargins(0,1000,0,0);
-            image.setMaxWidth(200);
-            image.setMaxHeight(200);
-            image.setImageResource(deck.get(i).getDrawable());
-            //System.out.println(deck.get(i).getDrawable());
-            image.setX(-100);
-            image.setY(0);
+        if(!flagPlayer) {
+            //AiView.clear();
+            int large = AiView.size();
+            for(int b = 0; b < large; b++){
+                //ImageView imageNew = (ImageView)findViewById(p.deck.get(b).getImageId());
+                //imageNew.setImageResource(0);
+                layoutNew.removeView(AiView.get(b));
 
-            image.setLayoutParams(lp);
-            image.setAdjustViewBounds(true);
-            image.setScaleType(ImageView.ScaleType.FIT_END);
-            image.setId(i+5);
-
-            AiView.add(image);
-
-            Card rest = deck.get(i);
-
-            p.deck.add(rest);
+                //AiView.remove(b);
+            }
+            p2Deck.clear();
         }
+            for (k = 0; k < 5; k++) {
+                int nobj = k;
+                int obj = (nobj*10)+20;
+                ImageView image = new ImageView( MainActivity.this );
 
+                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT );
+                lp.setMargins( 0, 1000, 0, 0 );
+
+                image.setMaxWidth(200);
+                image.setMaxHeight(200);
+                image.setImageResource( deck.get( k ).getDrawable() );
+                image.setX(100);
+                image.setY(0);
+
+                image.setLayoutParams( lp );
+                image.setAdjustViewBounds( true );
+                image.setScaleType( ImageView.ScaleType.FIT_END );
+                image.setId(deck.get(k).getImageId() );
+
+
+                AiView.add(image);
+
+                Card rest = deck.get( k );
+
+                p.deck.add( deck.get( k ) );
+
+                deck.remove(k);
+            }
+            k = 0;
+        //}
         Toast.makeText(getApplicationContext(),"Cards dealt to both of you",Toast.LENGTH_SHORT).show();
-
-
-
-
     }
 
-    private void playCard(Card res, int id, LinearLayout l1){
-        l1 = (LinearLayout)findViewById(R.id.german);
-        ImageView img = (ImageView)findViewById(id);
-        //l1.removeViewInLayout((ImageView)findViewById(id));
+    private void playCard(Card res, ImageView img, FrameLayout l1){
 
         Toast.makeText(getApplicationContext(),"Waiting for AI Turn",Toast.LENGTH_SHORT).show();
 
         Animation anim_one = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.newmiddle);
-        //Animation anim_two = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.animation_two);
+
         ObjectAnimator obj = ObjectAnimator.ofFloat(img,"x",400);
-        ObjectAnimator obj1 = ObjectAnimator.ofFloat(img, "y",10);
+        ObjectAnimator obj1 = ObjectAnimator.ofFloat(img, "y",200);
         obj.start();
         obj1.start();
-        //img.startAnimation(anim_one);
+
         playedCards.add(res);
+
+        //Toast.makeText(getApplicationContext(),"Your Turn, Go",Toast.LENGTH_SHORT).show();
+    }
+
+    private void playCardAi(FrameLayout l1, int d){
+        //l1 = (LinearLayout)findViewById(R.id.german);
+        System.out.println(d+"ai card");
+        layoutNew = l1;
+       /* //l1.removeViewInLayout((ImageView)findViewById(id));
+            //final ImageView image = new ImageView( MainActivity.this );
+
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT );
+            lp.setMargins( 0, 1000, 0, 0 );
+            image.setMaxWidth( 200 );
+            image.setMaxHeight( 200 );
+            image.setImageResource( deck.get(id).getDrawable() );
+            //System.out.println(deck.get(i).getDrawable());
+            image.setX( -100 );
+            image.setY( 0 );
+
+            image.setLayoutParams( lp );
+            image.setAdjustViewBounds( true );
+            image.setScaleType( ImageView.ScaleType.FIT_END );
+            //image.setId( i + 5 );*/
+
+
+
+
+        if(AiView.get(d).getParent() == null) {
+            if(!flagAi){
+                layoutNew.removeView(AiView.get(d));
+                AiView.remove(d);
+                //p2Deck.clear();
+            }
+            layoutNew.addView(AiView.get(d));
+            //p2Deck.remove(m);
+            //AiView.remove(m);
+        }
+        //else{
+
+          //  layoutNew.removeView(AiView.get(m));
+            //layoutNew.removeView(AiView.get(1));
+            //layoutNew.removeView(AiView.get(2));
+            //layoutNew.removeView(AiView.get(3));
+            //layoutNew.removeView(AiView.get(4));
+            //p2Deck.remove(m);
+          //  AiView.remove(m);
+        //}
+
+        Toast.makeText(getApplicationContext(),"Waiting for AI Turn",Toast.LENGTH_SHORT).show();
+
+
+        //Animation anim_one = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.aimiddle);
+        //Animation anim_two = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.animation_two);
+        //ObjectAnimator obj = ObjectAnimator.ofFloat(image,"x",400);
+        //ObjectAnimator obj1 = ObjectAnimator.ofFloat(image, "y",8);
+        //obj.start();
+        //obj1.start();
+        //img.startAnimation(anim_one);
+        //playedCards.add(res);
         //p1.deck.remove(res);
         /*if(p1.deck.size() == 0){
             getScore();
         }
+
 */
+        //m++;
+        //AiView.remove(m);
         //Toast.makeText(getApplicationContext(),"Your Turn, Go",Toast.LENGTH_SHORT).show();
     }
+
+
 
     private void getScore(){
         for(int i = 0; i < playedCards.size(); i++){
@@ -329,6 +413,10 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
     private void newDeck(){
         int draw = 0;
         deck.clear();
+
+
+        int idCounter = 0;
+
         for(int i = 1; i <= 4; i++){
             for(int j = 2; j <= 14; j++){
                 String rank = Card.rankToString(j);
@@ -337,8 +425,9 @@ public class MainActivity extends AppCompatActivity implements Animation.Animati
                 //System.out.print(cardName+" : ");
                 draw = getResources().getIdentifier(cardName,"drawable", getPackageName());
                 //System.out.println(draw);
-                Card obj = new Card(j,i,draw);
+                Card obj = new Card(j,i,draw,idCounter);
                 deck.add(obj);
+                idCounter++;
             }
         }
     }

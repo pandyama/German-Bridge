@@ -6,6 +6,7 @@ public class Card {
     private final int rank;
     private final int suit;
     private final int drawable;
+    private final int imageId;
 
 
     public final static int DIAMONDS = 1;
@@ -29,10 +30,11 @@ public class Card {
     public final static int ACE   = 14;
 
 
-    public Card(int rank, int suit, int drawable){
+    public Card(int rank, int suit, int drawable, int imageId){
         this.rank = rank;
         this.suit = suit;
         this.drawable = drawable;
+        this.imageId = imageId;
     }
 
     public int getRank(){
@@ -47,6 +49,11 @@ public class Card {
     public int getDrawable(){
 
         return drawable;
+    }
+
+    public int getImageId(){
+
+        return imageId;
     }
 
 
